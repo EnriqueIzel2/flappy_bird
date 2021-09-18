@@ -101,6 +101,32 @@ function Score() {
   this.updateScore(0);
 }
 
+function isOverlapped(elementA, elementB) {
+  const a = elementA.getBoundingClientRect();
+  const b = elementB.getBoundingClientRect();
+
+  const horizontal = a.left + a.width >= b.left && b.left + b.width >= a.left;
+  const vetical = a.top + a.height >= b.top && b.top + b.height >= a.top;
+
+  return horizontal && vetical;
+}
+
+function crashed(bird, barriers) {
+  let crashed = false;
+
+  barriers.pairs.forEach((pair) => {
+    if (!crashed) {
+      const top = pair.upper.element;
+      const bottom = pair.lower.element;
+
+      crashed =
+        isOverlapped(bird.element, top) || isOverlapped(bird.element, bottom);
+    }
+  });
+
+  return crashed;
+}
+
 function Game() {
   let scoreCount = 0;
 
@@ -122,6 +148,10 @@ function Game() {
     const timer = setInterval(() => {
       barriers.animate();
       bird.animate();
+
+      if (crashed(bird, barriers)) {
+        clearInterval(timer);
+      }
     }, 20);
   };
 }
