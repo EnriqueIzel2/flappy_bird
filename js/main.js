@@ -67,8 +67,63 @@ function Barriers(height, width, gap, space, posCenter) {
   };
 }
 
-const barreiras = new Barriers(700, 1100, 300, 400);
-const area = document.querySelector("[wm-flappy]");
-barreiras.pairs.forEach((pair) => area.appendChild(pair.element));
+function Bird(heightGame) {
+  let isFlapping = false;
 
-setInterval(() => barreiras.animate(), 20);
+  this.element = newElement("img", "bird");
+  this.element.src = "../assets/passaro.png";
+
+  this.getPosY = () => parseInt(this.element.style.bottom.split("px")[0]);
+  this.setPosY = (posY) => (this.element.style.bottom = `${posY}px`);
+
+  window.onkeydown = (e) => (isFlapping = true);
+  window.onkeyup = (e) => (isFlapping = false);
+
+  this.animate = () => {
+    const newPosY = this.getPosY() + (isFlapping ? 8 : -5);
+    const maxHeight = heightGame - this.element.clientHeight;
+
+    if (newPosY <= 0) {
+      this.setPosY(0);
+    } else if (newPosY >= maxHeight) {
+      this.setPosY(maxHeight);
+    } else {
+      this.setPosY(newPosY);
+    }
+  };
+
+  this.setPosY(heightGame / 2);
+}
+
+function Score() {
+  this.element = newElement("span", "score");
+  this.updateScore = (score) => (this.element.innerHTML = score);
+  this.updateScore(0);
+}
+
+function Game() {
+  let scoreCount = 0;
+
+  const gameArea = document.querySelector("[wm-flappy]");
+  const heightGame = gameArea.clientHeight;
+  const widthGame = gameArea.clientWidth;
+
+  const score = new Score();
+  const barriers = new Barriers(heightGame, widthGame, 200, 400, () => {
+    score.updateScore(++scoreCount);
+  });
+  const bird = new Bird(heightGame);
+
+  gameArea.appendChild(score.element);
+  gameArea.appendChild(bird.element);
+  barriers.pairs.forEach((pair) => gameArea.appendChild(pair.element));
+
+  this.start = () => {
+    const timer = setInterval(() => {
+      barriers.animate();
+      bird.animate();
+    }, 20);
+  };
+}
+
+new Game().start();
