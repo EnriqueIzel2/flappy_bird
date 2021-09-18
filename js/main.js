@@ -15,7 +15,7 @@ function Barrier(reverse = false) {
   this.setHeight = (height) => (shape.style.height = `${height}px`);
 }
 
-function Barriers(height, gap, posX) {
+function PairBarriers(height, gap, posX) {
   this.element = newElement("div", "barriers");
 
   this.upper = new Barrier(true);
@@ -39,9 +39,36 @@ function Barriers(height, gap, posX) {
   this.setPosX(posX);
 }
 
-const b = new Barriers(700, 300, 400);
-document.querySelector("[wm-flappy]").appendChild(b.element);
+function Barriers(height, width, gap, space, posCenter) {
+  this.pairs = [
+    new PairBarriers(height, gap, width),
+    new PairBarriers(height, gap, width + space),
+    new PairBarriers(height, gap, width + space * 2),
+    new PairBarriers(height, gap, width + space * 3),
+  ];
 
-// const b = new Barrier(true);
-// b.setHeight(200);
-// document.querySelector("[wm-flappy]").appendChild(b.element);
+  const displacement = 3;
+
+  this.animate = () => {
+    this.pairs.forEach((pair) => {
+      pair.setPosX(pair.getPosX() - displacement);
+
+      if (pair.getPosX() < -pair.getWidth()) {
+        pair.setPosX(pair.getPosX() + space * this.pairs.length);
+        pair.drawGap();
+      }
+
+      const middle = width / 2;
+      const crossedMiddle =
+        pair.getPosX() + displacement >= middle && pair.getPosX() < middle;
+
+      crossedMiddle && posCenter();
+    });
+  };
+}
+
+const barreiras = new Barriers(700, 1100, 300, 400);
+const area = document.querySelector("[wm-flappy]");
+barreiras.pairs.forEach((pair) => area.appendChild(pair.element));
+
+setInterval(() => barreiras.animate(), 20);
